@@ -9,7 +9,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="description" content="">
-    <title>8.4 - Choropleth maps</title>
+    <title>Covid-19 Confirmed Cases per 100,000</title>
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <!-- Custom CSS -->
@@ -30,7 +30,7 @@
         width = +svg.attr("width"),
         height = +svg.attr("height");
 
-    var unemployment = d3.map();
+    var cases = d3.map();
 
     var path = d3.geoPath();
 
@@ -40,7 +40,7 @@
 
     var color = d3.scaleThreshold()
         .domain(d3.range(2, 10))
-        .range(d3.schemeBuPu[9]);
+        .range(d3.schemeSpectral[8]);
 
     var g = svg.append("g")
         .attr("class", "key")
@@ -66,26 +66,18 @@
         .attr("fill", "#000")
         .attr("text-anchor", "start")
         .attr("font-weight", "bold")
-        .text("Covid-19 Total Cases");
+        .text("Covid-19 Confirmed Cases per 100,000");
 
     g.call(d3.axisBottom(x)
-        .tickSize(12)
+        .tickSize(10)
         .tickFormat(function(x, i) { return i ? x : x; })
         .tickValues(color.domain()))
       .select(".domain")
         .remove();
 
-/*  
-    Before V5
-    d3.queue()
-        .defer(d3.json, "https://d3js.org/us-10m.v1.json")
-        .defer(d3.tsv, "data/map.tsv", function(d) { unemployment.set(d.id, +d.rate); })
-        .await(ready);
-*/    
-
     var promises = [
       d3.json("https://d3js.org/us-10m.v1.json"),
-      d3.tsv("data/map.tsv",  function(d) { unemployment.set(d.id, +d.rate); })
+      d3.tsv("data/map.tsv",  function(d) { cases.set(d.id, +d.rate); })
     ]
 
     Promise.all(promises).then(function(data){
@@ -100,7 +92,7 @@
             .selectAll("path")
                 .data(topojson.feature(us, us.objects.counties).features)
             .enter().append("path")
-                .attr("fill", function(d) { return color(d.rate = unemployment.get(d.id)); })
+                .attr("fill", function(d) { return color(d.rate = cases.get(d.id)); })
                 .attr("d", path)
             .append("title")
                 .text(function(d) { return d.rate; });
